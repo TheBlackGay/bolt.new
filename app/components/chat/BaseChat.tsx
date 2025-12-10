@@ -7,6 +7,7 @@ import { Workbench } from '~/components/workbench/Workbench.client';
 import { classNames } from '~/utils/classNames';
 import { Messages } from './Messages.client';
 import { SendButton } from './SendButton.client';
+import { ModelSelectorInline } from './ModelSelectorInline';
 
 import styles from './BaseChat.module.scss';
 
@@ -79,6 +80,11 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                 <p className="mb-4 text-center text-bolt-elements-textSecondary">
                   Bring ideas to life in seconds or get help on existing projects.
                 </p>
+                <div className="mt-6 flex justify-center">
+                  <ClientOnly>
+                    {() => <ModelSelectorInline />}
+                  </ClientOnly>
+                </div>
               </div>
             )}
             <div

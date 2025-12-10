@@ -8,6 +8,9 @@ import { useMessageParser, usePromptEnhancer, useShortcuts, useSnapScroll } from
 import { useChatHistory } from '~/lib/persistence';
 import { chatStore } from '~/lib/stores/chat';
 import { workbenchStore } from '~/lib/stores/workbench';
+import { selectedProviderStore, selectedModelStore, getModelInfo } from '~/lib/stores/model';
+import { getSelectedEndpoint } from '~/lib/stores/openai-compatible';
+import type { ModelConfig } from '~/lib/.server/llm/model';
 import { fileModificationsToHTML } from '~/utils/diff';
 import { cubicEasingFn } from '~/utils/easings';
 import { createScopedLogger, renderLogger } from '~/utils/logger';
@@ -72,14 +75,49 @@ export const ChatImpl = memo(({ initialMessages, storeMessageHistory }: ChatProp
   const [chatStarted, setChatStarted] = useState(initialMessages.length > 0);
 
   const { showChat } = useStore(chatStore);
+  const selectedProvider = useStore(selectedProviderStore);
+  const selectedModel = useStore(selectedModelStore);
 
   const [animationScope, animate] = useAnimate();
 
+  // Build model configuration using the ModelConfig type
+  const modelConfig: Partial<ModelConfig> = {
+    provider: selectedProvider,
+    model: selectedModel,
+    maxTokens: getModelInfo(selectedModel)?.maxTokenAllowed || 8192,
+  };
+
+  // Get custom endpoint configuration for OpenAI Compatible
+  const customEndpoint = selectedProvider === 'OpenAICompatible' 
+    ? (() => {
+        const endpoint = getSelectedEndpoint();
+        return endpoint ? {
+          baseURL: endpoint.baseURL,
+          apiKey: endpoint.apiKey,
+        } : undefined;
+      })()
+    : undefined;
+
   const { messages, isLoading, input, handleInputChange, setInput, stop, append } = useChat({
     api: '/api/chat',
+    body: {
+      modelConfig,
+      customEndpoint,
+    },
     onError: (error) => {
       logger.error('Request failed\n\n', error);
-      toast.error('There was an error processing your request');
+      
+      // Show more specific error messages to users
+      try {
+        const errorData = JSON.parse(error.message);
+        if (errorData.error) {
+          toast.error(errorData.error);
+        } else {
+          toast.error('There was an error processing your request');
+        }
+      } catch {
+        toast.error('There was an error processing your request');
+      }
     },
     onFinish: () => {
       logger.debug('Finished streaming');

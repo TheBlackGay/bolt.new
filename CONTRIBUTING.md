@@ -56,10 +56,19 @@ git clone https://github.com/stackblitz/bolt.new.git
 pnpm install
 ```
 
-3. Create a `.env.local` file in the root directory and add your Anthropic API key:
+3. Create a `.env.local` file in the root directory and add your AI provider API keys:
 
 ```
+# Required - Anthropic (default provider)
 ANTHROPIC_API_KEY=XXX
+
+# Optional - add these to enable other providers
+OPENAI_API_KEY=XXX
+GOOGLE_GENERATIVE_AI_API_KEY=XXX
+
+# Optional - OpenAI Compatible (for local/custom models)
+OPENAI_COMPATIBLE_BASE_URL=http://localhost:1234/v1
+OPENAI_COMPATIBLE_API_KEY=optional_for_local
 ```
 
 Optionally, you can set the debug level:
@@ -69,6 +78,10 @@ VITE_LOG_LEVEL=debug
 ```
 
 **Important**: Never commit your `.env.local` file to version control. It's already included in .gitignore.
+
+**Note**: Bolt now supports multiple AI providers (Anthropic, OpenAI, Google, OpenAI Compatible). You can switch between them in the UI. See [MODEL_CONFIGURATION.md](./MODEL_CONFIGURATION.md) for details.
+
+**OpenAI Compatible**: Use local models via LM Studio, Ollama, or any OpenAI-compatible endpoint. See [OPENAI_COMPATIBLE_SETUP.md](./OPENAI_COMPATIBLE_SETUP.md) for setup instructions.
 
 ## Available Scripts
 

@@ -2,6 +2,7 @@ import { useStore } from '@nanostores/react';
 import { chatStore } from '~/lib/stores/chat';
 import { workbenchStore } from '~/lib/stores/workbench';
 import { classNames } from '~/utils/classNames';
+import { ModelSelector } from '~/components/settings/ModelSelector';
 
 interface HeaderActionButtonsProps {}
 
@@ -12,7 +13,8 @@ export function HeaderActionButtons({}: HeaderActionButtonsProps) {
   const canHideChat = showWorkbench || !showChat;
 
   return (
-    <div className="flex">
+    <div className="flex gap-2">
+      <ModelSelector />
       <div className="flex border border-bolt-elements-borderColor rounded-md overflow-hidden">
         <Button
           active={showChat}
