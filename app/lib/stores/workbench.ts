@@ -211,7 +211,19 @@ export class WorkbenchStore {
   }
 
   abortAllActions() {
-    // TODO: what do we wanna do and how do we wanna recover from this?
+    // Iterate through all artifacts and abort their running actions
+    const artifacts = this.artifacts.get();
+    
+    for (const [messageId, artifact] of Object.entries(artifacts)) {
+      const actions = artifact.runner.actions.get();
+      
+      // Abort each action that is pending or running
+      for (const [actionId, action] of Object.entries(actions)) {
+        if (action.status === 'pending' || action.status === 'running') {
+          action.abort();
+        }
+      }
+    }
   }
 
   addArtifact({ messageId, title, id }: ArtifactCallbackData) {

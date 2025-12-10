@@ -1,5 +1,5 @@
 import { useLoaderData, useNavigate } from '@remix-run/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { atom } from 'nanostores';
 import type { Message } from 'ai';
 import { toast } from 'react-toastify';
@@ -28,6 +28,7 @@ export function useChatHistory() {
   const [initialMessages, setInitialMessages] = useState<Message[]>([]);
   const [ready, setReady] = useState<boolean>(false);
   const [urlId, setUrlId] = useState<string | undefined>();
+  const navigatedRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (!db) {
@@ -73,7 +74,7 @@ export function useChatHistory() {
       if (!urlId && firstArtifact?.id) {
         const urlId = await getUrlId(db, firstArtifact.id);
 
-        navigateChat(urlId);
+        navigateChat(urlId, navigatedRef);
         setUrlId(urlId);
       }
 
@@ -87,7 +88,7 @@ export function useChatHistory() {
         chatId.set(nextId);
 
         if (!urlId) {
-          navigateChat(nextId);
+          navigateChat(nextId, navigatedRef);
         }
       }
 
@@ -96,12 +97,17 @@ export function useChatHistory() {
   };
 }
 
-function navigateChat(nextId: string) {
+function navigateChat(nextId: string, navigatedRef: React.MutableRefObject<boolean>) {
   /**
-   * FIXME: Using the intended navigate function causes a rerender for <Chat /> that breaks the app.
-   *
-   * `navigate(`/chat/${nextId}`, { replace: true });`
+   * Use window.history.replaceState instead of navigate() to avoid triggering
+   * a rerender of the Chat component. The navigatedRef ensures we only navigate once.
    */
+  if (navigatedRef.current) {
+    return;
+  }
+
+  navigatedRef.current = true;
+  
   const url = new URL(window.location.href);
   url.pathname = `/chat/${nextId}`;
 
